@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doküman Soru-Cevap Servisi</title>
-    <meta name="description" content="Yerel LLM ile dokümanlarınız hakkında sorular sorun">
+    <title>Document Q&A Service</title>
+    <meta name="description" content="Ask questions about your documents using a local LLM">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Header -->
@@ -17,11 +19,11 @@
             <div class="header-content">
                 <div class="logo">
                     <span class="logo-icon">📚</span>
-                    <h1>Doküman QA</h1>
+                    <h1>Document QA</h1>
                 </div>
                 <div class="status-badge" id="statusBadge">
                     <span class="status-dot"></span>
-                    <span class="status-text">Bağlanıyor...</span>
+                    <span class="status-text">Connecting...</span>
                 </div>
             </div>
         </header>
@@ -31,23 +33,23 @@
             <!-- Sidebar - Documents -->
             <aside class="sidebar">
                 <div class="sidebar-header">
-                    <h2>📄 Dokümanlar</h2>
+                    <h2>📄 Documents</h2>
                     <span class="doc-count" id="docCount">0</span>
                 </div>
-                
+
                 <!-- Upload Section -->
                 <div class="upload-section">
                     <label for="fileUpload" class="upload-label">
                         <span class="upload-icon">⬆️</span>
-                        <span>Doküman Yükle</span>
+                        <span>Upload Document</span>
                         <span class="upload-hint">PDF, TXT, MD, DOCX</span>
                     </label>
                     <input type="file" id="fileUpload" accept=".pdf,.txt,.md,.docx" hidden>
                 </div>
-                
+
                 <!-- Document List -->
                 <div class="document-list" id="documentList">
-                    <p class="empty-state">Henüz doküman yüklenmedi</p>
+                    <p class="empty-state">No documents uploaded yet</p>
                 </div>
             </aside>
 
@@ -57,25 +59,23 @@
                 <div class="messages-container" id="messagesContainer">
                     <div class="welcome-message">
                         <div class="welcome-icon">🤖</div>
-                        <h2>Merhaba!</h2>
-                        <p>Dokümanlarınız hakkında sorular sormak için önce sol taraftan doküman yükleyin, sonra aşağıdaki alana sorunuzu yazın.</p>
+                        <h2>Hello!</h2>
+                        <p>To ask questions about your documents, first upload a document from the left panel, then type
+                            your question in the field below.</p>
                     </div>
                 </div>
 
                 <!-- Input Area -->
                 <div class="input-area">
                     <div class="input-container">
-                        <textarea 
-                            id="questionInput" 
-                            placeholder="Dokümanlarınız hakkında bir soru sorun..."
-                            rows="1"
-                        ></textarea>
+                        <textarea id="questionInput" placeholder="Ask a question about your documents..."
+                            rows="1"></textarea>
                         <button id="askButton" class="ask-button" disabled>
-                            <span class="button-text">Sor</span>
+                            <span class="button-text">Ask</span>
                             <span class="button-loader" hidden></span>
                         </button>
                     </div>
-                    <p class="input-hint">Enter ile gönder • Shift+Enter ile yeni satır</p>
+                    <p class="input-hint">Press Enter to send • Shift+Enter for new line</p>
                 </div>
             </section>
         </main>
@@ -86,4 +86,5 @@
 
     <script src="/static/script.js"></script>
 </body>
+
 </html>

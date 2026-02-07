@@ -1,86 +1,108 @@
 """
-Pydantic schemas for API request/response models.
+Pydantic Schemas - Request and Response models.
 
 This module defines all data models used for API validation and serialization.
 """
 
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
 
+
+# ===========================
+# Health Check Models
+# ===========================
 
 class HealthResponse(BaseModel):
-    """Response model for health check endpoint."""
+    """Health check response model."""
     
-    status: str = Field(description="Service status", example="healthy")
-    version: str = Field(description="API version", example="1.0.0")
-    llm_status: str = Field(description="LLM connection status", example="connected")
-    documents_count: int = Field(description="Number of indexed documents", example=5)
+    status: str = Field(..., description="Service status (healthy/degraded)")
+    version: str = Field(..., description="Service version")
+    llm_status: str = Field(..., description="LLM connection status (connected/disconnected)")
+    documents_count: int = Field(..., description="Number of indexed documents")
 
+
+# ===========================
+# Ask Question Models
+# ===========================
 
 class AskRequest(BaseModel):
-    """Request model for ask endpoint."""
+    """Request model for asking questions."""
     
     question: str = Field(
         ...,
         min_length=1,
         max_length=1000,
-        description="The question to ask about the documents",
-        example="What is the main topic of the document?"
+        description="Question to ask about the documents"
     )
-    top_k: Optional[int] = Field(
+    top_k: int = Field(
         default=3,
         ge=1,
         le=10,
-        description="Number of relevant document chunks to retrieve"
+        description="Number of top results to use for context"
     )
 
 
 class SourceDocument(BaseModel):
-    """Model for source document information in responses."""
+    """Source document information in response."""
     
-    content: str = Field(description="Document chunk content")
-    source: str = Field(description="Source file name")
-    score: float = Field(description="Relevance score")
+    content: str = Field(..., description="Matched content from document")
+    source: str = Field(..., description="Source filename")
+    score: float = Field(..., description="Relevance score (0-1)")
 
 
 class AskResponse(BaseModel):
-    """Response model for ask endpoint."""
+    """Response model for question answering."""
     
-    answer: str = Field(description="Generated answer from LLM")
+    answer: str = Field(..., description="Generated answer")
     sources: list[SourceDocument] = Field(
-        description="Source documents used for the answer"
+        default_factory=list,
+        description="Source documents used for answer"
     )
-    processing_time: float = Field(description="Time taken to process in seconds")
+    processing_time: float = Field(..., description="Total processing time (seconds)")
 
+
+# ===========================
+# Document Upload Models
+# ===========================
 
 class UploadResponse(BaseModel):
-    """Response model for document upload endpoint."""
+    """Response model for document upload."""
     
-    message: str = Field(description="Upload status message")
-    filename: str = Field(description="Uploaded file name")
-    chunks_created: int = Field(description="Number of chunks created from document")
+    message: str = Field(..., description="Operation result message")
+    filename: str = Field(..., description="Uploaded filename")
+    chunks_created: int = Field(..., description="Number of chunks created")
 
+
+# ===========================
+# Document List Models
+# ===========================
 
 class DocumentInfo(BaseModel):
-    """Model for document information."""
+    """Information about a stored document."""
     
-    filename: str = Field(description="Document file name")
-    size_bytes: int = Field(description="File size in bytes")
-    uploaded_at: datetime = Field(description="Upload timestamp")
-    chunks_count: int = Field(description="Number of chunks in vector store")
+    filename: str = Field(..., description="Document filename")
+    size_bytes: int = Field(..., description="File size in bytes")
+    uploaded_at: Optional[datetime] = Field(None, description="Upload timestamp")
+    chunks_count: int = Field(default=0, description="Number of chunks in vector database")
 
 
 class DocumentListResponse(BaseModel):
-    """Response model for document list endpoint."""
+    """Response model for document listing."""
     
-    documents: list[DocumentInfo] = Field(description="List of indexed documents")
-    total_count: int = Field(description="Total number of documents")
+    documents: list[DocumentInfo] = Field(
+        default_factory=list,
+        description="List of documents"
+    )
+    total_count: int = Field(..., description="Total document count")
 
+
+# ===========================
+# Error Models
+# ===========================
 
 class ErrorResponse(BaseModel):
     """Standard error response model."""
     
-    error: str = Field(description="Error type")
-    message: str = Field(description="Error message")
-    details: Optional[str] = Field(default=None, description="Additional details")
+    detail: str = Field(..., description="Error description")
+    error_code: Optional[str] = Field(None, description="Error code")

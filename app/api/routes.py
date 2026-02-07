@@ -83,7 +83,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
     if not question:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Soru boş olamaz"
+            detail="Question cannot be empty"
         )
     
     try:
@@ -95,14 +95,14 @@ async def ask_question(request: AskRequest) -> AskResponse:
         if not llm_service.check_connection():
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="LLM servisi şu anda kullanılamıyor. Ollama'nın çalıştığından emin olun."
+                detail="LLM service is currently unavailable. Make sure Ollama is running."
             )
         
         # Check if we have documents
         if vector_service.get_document_count() == 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Henüz hiç doküman yüklenmemiş. Önce /upload endpoint'i ile doküman yükleyin."
+                detail="No documents have been uploaded yet. Please upload documents using the /upload endpoint first."
             )
         
         # Search for relevant documents
@@ -120,7 +120,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
                 score=round(result['score'], 3)
             ))
         
-        context = "\n\n".join(context_parts) if context_parts else "Bağlam bulunamadı."
+        context = "\n\n".join(context_parts) if context_parts else "No context found."
         
         # Generate response from LLM
         answer = llm_service.generate_response(question, context)
@@ -139,7 +139,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
         logger.error(f"Error processing question: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Soru işlenirken hata oluştu: {str(e)}"
+            detail=f"Error processing question: {str(e)}"
         )
 
 
@@ -187,7 +187,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
         if not text.strip():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Dosyadan metin çıkarılamadı. Dosyanın boş olmadığından emin olun."
+                detail="Could not extract text from file. Make sure the file is not empty."
             )
         
         # Delete existing chunks for this source (if re-uploading)
@@ -202,7 +202,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
         logger.info(f"Uploaded and indexed document: {file.filename} ({chunks_added} chunks)")
         
         return UploadResponse(
-            message="Doküman başarıyla yüklendi ve indekslendi",
+            message="Document uploaded and indexed successfully",
             filename=file.filename,
             chunks_created=chunks_added
         )
@@ -213,7 +213,7 @@ async def upload_document(file: UploadFile = File(...)) -> UploadResponse:
         logger.error(f"Error uploading document: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Doküman yüklenirken hata oluştu: {str(e)}"
+            detail=f"Error uploading document: {str(e)}"
         )
 
 
@@ -275,9 +275,9 @@ async def delete_document(filename: str) -> dict:
         file_path.unlink()
     
     if deleted_count > 0 or file_path.exists():
-        return {"message": f"Doküman silindi: {filename}", "chunks_deleted": deleted_count}
+        return {"message": f"Document deleted: {filename}", "chunks_deleted": deleted_count}
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Doküman bulunamadı: {filename}"
+            detail=f"Document not found: {filename}"
         )

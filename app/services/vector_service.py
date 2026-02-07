@@ -1,16 +1,14 @@
 """
-Vector Service - Handles vector database operations with ChromaDB.
+Vector Service - Handles embeddings and ChromaDB operations.
 
-This module provides functionality for storing document embeddings
-and performing similarity searches for RAG.
+This module provides functionality for generating embeddings,
+storing vectors, and performing similarity search.
 """
 
 import logging
 from typing import Optional
-from pathlib import Path
-
 import chromadb
-from chromadb.config import Settings as ChromaSettings
+from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 
 from app.config import settings
@@ -23,16 +21,21 @@ class VectorService:
     """
     Service class for vector database operations.
     
-    This class handles embedding generation, storage in ChromaDB,
-    and similarity search for document retrieval.
+    This class handles embedding generation, vector storage,
+    and similarity search using ChromaDB.
     """
     
     def __init__(self):
         """Initialize the vector service with ChromaDB and embedding model."""
+        # Initialize embedding model
+        logger.info(f"Loading embedding model: {settings.embedding_model}")
+        self.embedding_model = SentenceTransformer(settings.embedding_model)
+        logger.info(f"Embedding model loaded successfully")
+        
         # Initialize ChromaDB
         self.client = chromadb.PersistentClient(
             path=settings.chroma_persist_directory,
-            settings=ChromaSettings(anonymized_telemetry=False)
+            settings=Settings(anonymized_telemetry=False)
         )
         
         # Get or create collection
@@ -41,10 +44,7 @@ class VectorService:
             metadata={"hnsw:space": "cosine"}
         )
         
-        # Initialize embedding model
-        logger.info(f"Loading embedding model: {settings.embedding_model}")
-        self.embedding_model = SentenceTransformer(settings.embedding_model)
-        logger.info("Embedding model loaded successfully")
+        logger.info(f"ChromaDB initialized. Documents in index: {self.collection.count()}")
     
     def add_chunks(self, chunks: list[DocumentChunk]) -> int:
         """
@@ -59,33 +59,30 @@ class VectorService:
         if not chunks:
             return 0
         
-        # Prepare data for ChromaDB
-        documents = []
-        metadatas = []
-        ids = []
+        # Generate embeddings for all chunks
+        texts = [chunk.content for chunk in chunks]
+        embeddings = self.embedding_model.encode(texts).tolist()
         
-        for chunk in chunks:
-            doc_id = f"{chunk.source}_{chunk.chunk_index}"
-            documents.append(chunk.content)
-            metadatas.append({
+        # Prepare data for ChromaDB
+        ids = [f"{chunks[0].source}_{i}" for i in range(len(chunks))]
+        metadatas = [
+            {
                 "source": chunk.source,
                 "chunk_index": chunk.chunk_index,
                 **chunk.metadata
-            })
-            ids.append(doc_id)
-        
-        # Generate embeddings
-        embeddings = self.embedding_model.encode(documents).tolist()
+            }
+            for chunk in chunks
+        ]
         
         # Add to collection
         self.collection.add(
-            documents=documents,
+            ids=ids,
             embeddings=embeddings,
-            metadatas=metadatas,
-            ids=ids
+            documents=texts,
+            metadatas=metadatas
         )
         
-        logger.info(f"Added {len(chunks)} chunks to vector database")
+        logger.info(f"Added {len(chunks)} chunks from {chunks[0].source}")
         return len(chunks)
     
     def search(
@@ -94,11 +91,11 @@ class VectorService:
         top_k: int = 3
     ) -> list[dict]:
         """
-        Search for similar documents based on query.
+        Search for similar documents using the query.
         
         Args:
-            query: Search query string.
-            top_k: Number of results to return.
+            query: The search query.
+            top_k: Number of top results to return.
             
         Returns:
             List of dictionaries with content, source, and score.
@@ -128,76 +125,60 @@ class VectorService:
         
         return formatted_results
     
-    def get_document_count(self) -> int:
-        """
-        Get the total number of chunks in the collection.
-        
-        Returns:
-            int: Number of stored chunks.
-        """
-        return self.collection.count()
-    
-    def get_sources(self) -> list[str]:
-        """
-        Get list of unique source documents.
-        
-        Returns:
-            List of source filenames.
-        """
-        if self.collection.count() == 0:
-            return []
-        
-        # Get all metadata
-        results = self.collection.get()
-        
-        if results['metadatas']:
-            sources = set(m.get('source', '') for m in results['metadatas'])
-            return list(sources)
-        
-        return []
-    
     def delete_by_source(self, source: str) -> int:
         """
-        Delete all chunks from a specific source.
+        Delete all chunks for a specific source document.
         
         Args:
-            source: Source filename to delete.
+            source: The source filename to delete.
             
         Returns:
             int: Number of chunks deleted.
         """
-        # Get IDs for the source
-        results = self.collection.get(
-            where={"source": source}
-        )
-        
-        if results['ids']:
-            count = len(results['ids'])
-            self.collection.delete(ids=results['ids'])
-            logger.info(f"Deleted {count} chunks from source: {source}")
-            return count
-        
-        return 0
-    
-    def clear_all(self) -> int:
-        """
-        Clear all documents from the collection.
-        
-        Returns:
-            int: Number of chunks deleted.
-        """
-        count = self.collection.count()
-        
-        if count > 0:
-            # Delete the collection and recreate it
-            self.client.delete_collection(settings.chroma_collection_name)
-            self.collection = self.client.create_collection(
-                name=settings.chroma_collection_name,
-                metadata={"hnsw:space": "cosine"}
+        try:
+            # Get IDs for this source
+            results = self.collection.get(
+                where={"source": source}
             )
-            logger.info(f"Cleared {count} chunks from vector database")
-        
-        return count
+            
+            if results['ids']:
+                self.collection.delete(ids=results['ids'])
+                logger.info(f"Deleted {len(results['ids'])} chunks for source: {source}")
+                return len(results['ids'])
+            
+            return 0
+        except Exception as e:
+            logger.error(f"Error deleting chunks: {e}")
+            return 0
+    
+    def get_document_count(self) -> int:
+        """Get total number of document chunks in the database."""
+        return self.collection.count()
+    
+    def get_sources(self) -> list[str]:
+        """Get unique source document names."""
+        try:
+            results = self.collection.get()
+            sources = set()
+            
+            if results['metadatas']:
+                for metadata in results['metadatas']:
+                    if 'source' in metadata:
+                        sources.add(metadata['source'])
+            
+            return list(sources)
+        except Exception as e:
+            logger.error(f"Error getting sources: {e}")
+            return []
+    
+    def clear_all(self) -> None:
+        """Clear all documents from the database."""
+        self.client.delete_collection(settings.chroma_collection_name)
+        self.collection = self.client.get_or_create_collection(
+            name=settings.chroma_collection_name,
+            metadata={"hnsw:space": "cosine"}
+        )
+        logger.info("Cleared all documents from the database")
 
 
 # Singleton instance

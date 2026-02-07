@@ -58,11 +58,11 @@ class DocumentService:
         # Check extension
         ext = Path(filename).suffix.lower()
         if ext not in self.allowed_extensions:
-            return False, f"Desteklenmeyen dosya türü: {ext}. İzin verilenler: {self.allowed_extensions}"
+            return False, f"Unsupported file type: {ext}. Allowed types: {self.allowed_extensions}"
         
         # Check file size
         if file_size > self.max_file_size:
-            return False, f"Dosya boyutu çok büyük. Maksimum: {settings.max_file_size_mb}MB"
+            return False, f"File size too large. Maximum: {settings.max_file_size_mb}MB"
         
         return True, ""
     
@@ -88,7 +88,7 @@ class DocumentService:
         elif ext == ".docx":
             return self._extract_from_docx(file_path)
         else:
-            raise ValueError(f"Desteklenmeyen dosya türü: {ext}")
+            raise ValueError(f"Unsupported file type: {ext}")
     
     def _extract_from_pdf(self, file_path: Path) -> str:
         """Extract text from PDF file."""
@@ -105,7 +105,7 @@ class DocumentService:
             return "\n\n".join(text_parts)
         except Exception as e:
             logger.error(f"Failed to extract PDF text: {e}")
-            raise ValueError(f"PDF okunamadı: {str(e)}")
+            raise ValueError(f"Could not read PDF: {str(e)}")
     
     def _extract_from_text(self, file_path: Path) -> str:
         """Extract text from TXT or MD file."""
@@ -130,7 +130,7 @@ class DocumentService:
             return "\n\n".join(text_parts)
         except Exception as e:
             logger.error(f"Failed to extract DOCX text: {e}")
-            raise ValueError(f"DOCX okunamadı: {str(e)}")
+            raise ValueError(f"Could not read DOCX: {str(e)}")
     
     def split_into_chunks(
         self,

@@ -1,13 +1,12 @@
 """
-Application configuration settings.
+Configuration module for the Local RAG Service.
 
-This module contains all configuration parameters for the RAG service,
-including LLM settings, vector database settings, and document processing options.
+This module uses Pydantic Settings to load configuration
+from environment variables or .env file.
 """
 
-import os
-from pathlib import Path
 from pydantic_settings import BaseSettings
+from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -34,19 +33,18 @@ class Settings(BaseSettings):
     chunk_overlap: int = 50
     max_file_size_mb: int = 10
     allowed_extensions: list[str] = [".pdf", ".txt", ".md", ".docx"]
+    documents_directory: str = "./documents"
     
     # RAG settings
     top_k_results: int = 3
     
-    # Paths
-    documents_directory: str = "./documents"
-    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
-# Global settings instance
+# Create global settings instance
 settings = Settings()
 
 # Ensure directories exist

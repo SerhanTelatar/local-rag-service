@@ -99,22 +99,25 @@ class LLMService:
     
     def _get_default_system_prompt(self) -> str:
         """Get the default system prompt for RAG."""
-        return """Sen yardımcı bir asistansın. Sana verilen bağlam (context) bilgilerini kullanarak soruları cevapla.
+        return """You are a helpful assistant. Answer questions using the provided context information.
 
-Kurallar:
-1. Sadece verilen bağlamdaki bilgileri kullan.
-2. Eğer cevap bağlamda yoksa, "Bu bilgi verilen dokümanlarda bulunmuyor." de.
-3. Cevaplarını açık ve net tut.
-4. Kaynak belirtirken hangi dokümandan bilgi aldığını söyle."""
+IMPORTANT: You MUST respond ONLY in English. Do not use any other language.
+
+Rules:
+1. Always respond in English, regardless of the language of the context or question.
+2. Only use information from the provided context.
+3. If the answer is not in the context, say "This information is not found in the provided documents."
+4. Keep your answers clear and concise.
+5. When citing sources, mention which document the information came from."""
     
     def _format_user_message(self, question: str, context: str) -> str:
         """Format the user message with context and question."""
-        return f"""Bağlam (Context):
+        return f"""Context:
 {context}
 
-Soru: {question}
+Question: {question}
 
-Lütfen yukarıdaki bağlamı kullanarak soruyu cevapla."""
+Please answer the question using the context above."""
 
 
 # Singleton instance

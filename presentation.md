@@ -1,47 +1,47 @@
-# Yerel LLM ile Doküman Soru-Cevap Servisi
-## Teknik Sunum
+# Local LLM Document Question-Answering Service
+## Technical Presentation
 
 ---
 
-# 1. Problem Tanımı
+# 1. Problem Definition
 
-## Kullanıcı İhtiyacı
+## User Need
 
-Günümüzde birçok kurum ve birey, büyük miktarda dokümana sahip olmasına rağmen bu dokümanlardan hızlıca bilgi çıkarmak konusunda zorluk yaşamaktadır.
+Today, many organizations and individuals have large amounts of documents but struggle to quickly extract information from them.
 
-**Temel Sorunlar:**
-- 📚 Dokümanlar arasında manuel arama zaman alıcı
-- 🔒 Hassas veriler bulut servislerine yüklenemez
-- 💰 Ticari API'ler maliyet oluşturur
-- 🌐 İnternet bağlantısı gerektiren çözümler her zaman kullanılamaz
+**Core Problems:**
+- 📚 Manual document search is time-consuming
+- 🔒 Sensitive data cannot be uploaded to cloud services
+- 💰 Commercial APIs create costs
+- 🌐 Solutions requiring internet are not always available
 
-## Çözüm Yaklaşımı
+## Solution Approach
 
-Bu servis, **RAG (Retrieval-Augmented Generation)** yaklaşımını kullanarak:
+This service uses the **RAG (Retrieval-Augmented Generation)** approach to:
 
-1. **Yerel Çalışma**: Tüm işlemler kullanıcının bilgisayarında gerçekleşir
-2. **Semantik Arama**: Anahtar kelime yerine anlam bazlı arama
-3. **Bağlam Destekli Cevap**: LLM, sadece ilgili doküman parçalarını kullanarak cevap üretir
-4. **Kolay Kullanım**: Web arayüzü ile teknik bilgi gerektirmeden kullanım
+1. **Local Processing**: All operations happen on the user's computer
+2. **Semantic Search**: Meaning-based search instead of keyword matching
+3. **Context-Aware Answers**: LLM generates answers using only relevant document sections
+4. **Easy to Use**: Web interface requires no technical knowledge
 
 ---
 
-# 2. LLM ile İletişim Katmanı
+# 2. LLM Communication Layer
 
-## Teknoloji Seçimi: Ollama
+## Technology Choice: Ollama
 
-| Alternatif | Avantajları | Dezavantajları |
-|------------|-------------|----------------|
-| **Ollama** ✓ | Kolay kurulum, OpenAI uyumlu API | Model boyutları büyük |
-| LM Studio | GUI desteği | API kısıtlı |
-| HuggingFace Transformers | Esneklik | Kurulum karmaşık |
+| Alternative | Advantages | Disadvantages |
+|-------------|------------|---------------|
+| **Ollama** ✓ | Easy setup, OpenAI-compatible API | Large model sizes |
+| LM Studio | GUI support | Limited API |
+| HuggingFace Transformers | Flexibility | Complex setup |
 
-**Ollama Tercihi Nedenleri:**
-- Tek komutla model indirme
-- REST API ile kolay entegrasyon
-- Düşük bellek optimizasyonları
+**Why Ollama:**
+- Single command model download
+- Easy REST API integration
+- Low memory optimizations
 
-## Modül Yapısı
+## Module Structure
 
 ```python
 # app/services/llm_service.py
@@ -51,83 +51,83 @@ class LLMService:
     def generate_response(question, context) -> str
 ```
 
-## Prompt Mühendisliği
+## Prompt Engineering
 
-RAG için optimize edilmiş sistem prompt'u:
-- Bağlam bilgisini zorunlu kılar
-- Türkçe cevap üretimi için yönlendirir
-- Kaynak belirtme kuralları tanımlar
+System prompt optimized for RAG:
+- Requires context information
+- Guides response generation
+- Defines source citation rules
 
 ---
 
-# 3. Doküman İşleme ve Vektör Veritabanı
+# 3. Document Processing and Vector Database
 
-## Doküman İşleme Pipeline
+## Document Processing Pipeline
 
 ```mermaid
 flowchart LR
-    A["📄 Doküman"] --> B["📖 Metin Çıkarma"]
+    A["📄 Document"] --> B["📖 Text Extraction"]
     B --> C["✂️ Chunking"]
     C --> D["🔢 Embedding"]
     D --> E["💾 ChromaDB"]
 ```
 
-## Desteklenen Formatlar
+## Supported Formats
 
-| Format | Kütüphane | Özellikler |
-|--------|-----------|------------|
-| PDF | PyMuPDF | Hızlı, güvenilir |
-| TXT/MD | Built-in | UTF-8 desteği |
-| DOCX | python-docx | Paragraf bazlı |
+| Format | Library | Features |
+|--------|---------|----------|
+| PDF | PyMuPDF | Fast, reliable |
+| TXT/MD | Built-in | UTF-8 support |
+| DOCX | python-docx | Paragraph-based |
 
-## Chunking Stratejisi
+## Chunking Strategy
 
 ```python
-# Parametreler
-chunk_size = 500 karakter
-chunk_overlap = 50 karakter
+# Parameters
+chunk_size = 500 characters
+chunk_overlap = 50 characters
 ```
 
-**Neden Overlap?**
-- Cümle bütünlüğünü korur
-- Bağlam kaybını önler
+**Why Overlap?**
+- Preserves sentence integrity
+- Prevents context loss
 
-## Vektör Veritabanı: ChromaDB
+## Vector Database: ChromaDB
 
-**Tercih Nedenleri:**
-- Python-native, ek servis gerektirmez
-- Kalıcı depolama (persist)
-- Cosine similarity desteği
+**Why ChromaDB:**
+- Python-native, no additional service required
+- Persistent storage
+- Cosine similarity support
 
-## Embedding Modeli
+## Embedding Model
 
 **all-MiniLM-L6-v2** (Sentence-Transformers)
-- 384 boyutlu vektörler
-- Hızlı inference
-- Çok dilli destek
+- 384-dimensional vectors
+- Fast inference
+- Multilingual support
 
 ---
 
-# 4. API / Servis Katmanı
+# 4. API / Service Layer
 
-## Teknoloji: FastAPI
+## Technology: FastAPI
 
-**Neden FastAPI?**
-- ⚡ Async/await desteği
-- 📚 Otomatik OpenAPI dokümantasyonu
-- ✅ Pydantic ile tip güvenliği
-- 🧪 Kolay test edilebilirlik
+**Why FastAPI?**
+- ⚡ Async/await support
+- 📚 Automatic OpenAPI documentation
+- ✅ Type safety with Pydantic
+- 🧪 Easy testability
 
-## Endpoint'ler
+## Endpoints
 
-| Endpoint | Metod | Açıklama |
-|----------|-------|----------|
-| `/api/health` | GET | Servis durumu |
-| `/api/ask` | POST | Soru-cevap |
-| `/api/upload` | POST | Doküman yükleme |
-| `/api/documents` | GET | Doküman listesi |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Service status |
+| `/api/ask` | POST | Question-answering |
+| `/api/upload` | POST | Document upload |
+| `/api/documents` | GET | Document list |
 
-## Request/Response Akışı
+## Request/Response Flow
 
 ```mermaid
 sequenceDiagram
@@ -144,40 +144,40 @@ sequenceDiagram
     API-->>User: {answer, sources}
 ```
 
-## Hata Yönetimi
+## Error Handling
 
-- 400: Geçersiz istek (boş soru, yanlış format)
-- 404: Kaynak bulunamadı
-- 503: LLM servisi kullanılamıyor
-- 500: Beklenmeyen sunucu hatası
+- 400: Invalid request (empty question, wrong format)
+- 404: Resource not found
+- 503: LLM service unavailable
+- 500: Unexpected server error
 
 ---
 
-# 5. Genel Çalışma Mimarisi
+# 5. Overall Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Client["🖥️ İstemci"]
-        UI["Web Arayüzü<br/>(HTML/CSS/JS)"]
+    subgraph Client["🖥️ Client"]
+        UI["Web Interface<br/>(HTML/CSS/JS)"]
     end
 
     subgraph Backend["⚡ FastAPI Backend"]
         Router["API Router"]
         
-        subgraph Services["Servisler"]
+        subgraph Services["Services"]
             DocSvc["Document<br/>Service"]
             VecSvc["Vector<br/>Service"]
             LLMSvc["LLM<br/>Service"]
         end
     end
 
-    subgraph Storage["💾 Depolama"]
-        Files["Dokümanlar<br/>(PDF/TXT/MD)"]
-        Chroma["ChromaDB<br/>(Vektörler)"]
+    subgraph Storage["💾 Storage"]
+        Files["Documents<br/>(PDF/TXT/MD)"]
+        Chroma["ChromaDB<br/>(Vectors)"]
     end
 
-    subgraph LLM["🤖 Yerel LLM"]
-        Ollama["Ollama Server<br/>(llama3.2)"]
+    subgraph LLM["🤖 Local LLM"]
+        Ollama["Ollama Server<br/>(llama3.1:8b)"]
     end
 
     UI -->|"HTTP"| Router
@@ -192,86 +192,84 @@ flowchart TB
     VecSvc -.->|"context"| LLMSvc
 ```
 
-## Veri Akışı
+## Data Flow
 
-### Doküman Yükleme
-1. Kullanıcı dosya seçer
-2. API dosyayı alır, doğrular
-3. DocumentService metni çıkarır
-4. Metin chunk'lara ayrılır
-5. VectorService embedding oluşturur
-6. ChromaDB'ye kaydedilir
+### Document Upload
+1. User selects file
+2. API receives and validates file
+3. DocumentService extracts text
+4. Text is split into chunks
+5. VectorService creates embeddings
+6. Saved to ChromaDB
 
-### Soru Sorma
-1. Kullanıcı soru yazar
-2. Soru embedding'e dönüştürülür
-3. ChromaDB'de benzer chunk'lar aranır
-4. En alakalı chunk'lar seçilir
-5. LLM'e soru + context gönderilir
-6. Cevap kullanıcıya döndürülür
+### Asking Questions
+1. User types question
+2. Question converted to embedding
+3. Similar chunks searched in ChromaDB
+4. Most relevant chunks selected
+5. Question + context sent to LLM
+6. Answer returned to user
 
 ---
 
-# 6. Literatür Araştırması
+# 6. Literature Review
 
-## Kaynaklar
+## Sources
 
-### RAG Yaklaşımı
+### RAG Approach
 - [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401) - Lewis et al., 2020
 - [LangChain Documentation](https://python.langchain.com/)
 
-### Vektör Veritabanları
+### Vector Databases
 - [ChromaDB Documentation](https://docs.trychroma.com/)
 - [FAISS vs ChromaDB Comparison](https://medium.com/)
 
-### Yerel LLM
+### Local LLM
 - [Ollama Documentation](https://ollama.ai/)
 - [LM Studio vs Ollama](https://github.com/)
 
-## Karşılaştırmalı Analiz
+## Comparative Analysis
 
-### Vektör Veritabanı Seçimi
+### Vector Database Selection
 
-| Özellik | ChromaDB | FAISS | Pinecone |
+| Feature | ChromaDB | FAISS | Pinecone |
 |---------|----------|-------|----------|
-| Kurulum | ✅ Kolay | ⚠️ Orta | ⚠️ Bulut |
-| Kalıcılık | ✅ Var | ❌ Manuel | ✅ Var |
-| Maliyet | ✅ Ücretsiz | ✅ Ücretsiz | ❌ Ücretli |
-| Ölçeklenebilirlik | ⚠️ Orta | ✅ Yüksek | ✅ Yüksek |
+| Setup | ✅ Easy | ⚠️ Medium | ⚠️ Cloud |
+| Persistence | ✅ Yes | ❌ Manual | ✅ Yes |
+| Cost | ✅ Free | ✅ Free | ❌ Paid |
+| Scalability | ⚠️ Medium | ✅ High | ✅ High |
 
-**ChromaDB Tercihi**: Proje ölçeğinde yeterli, kurulumu kolay, Python-native.
+**ChromaDB Choice**: Sufficient for project scale, easy setup, Python-native.
 
-### Embedding Modeli Seçimi
+### Embedding Model Selection
 
-| Model | Boyut | Hız | Kalite |
-|-------|-------|-----|--------|
-| all-MiniLM-L6-v2 | 384 | ✅ Hızlı | ⚠️ İyi |
-| all-mpnet-base-v2 | 768 | ⚠️ Orta | ✅ Yüksek |
-| OpenAI Ada | 1536 | ❌ API | ✅ Yüksek |
+| Model | Dimensions | Speed | Quality |
+|-------|------------|-------|---------|
+| all-MiniLM-L6-v2 | 384 | ✅ Fast | ⚠️ Good |
+| all-mpnet-base-v2 | 768 | ⚠️ Medium | ✅ High |
+| OpenAI Ada | 1536 | ❌ API | ✅ High |
 
-**MiniLM Tercihi**: Hız/kalite dengesi, yerel çalışma, yeterli performans.
+**MiniLM Choice**: Speed/quality balance, local operation, sufficient performance.
 
-## Öğrenilen Dersler
+## Lessons Learned
 
-1. **Chunk boyutu kritik**: Çok küçük → bağlam kaybı, çok büyük → gürültü
-2. **Overlap önemli**: Cümle sınırlarını korumak için gerekli
-3. **Prompt mühendisliği**: RAG için özel prompt tasarımı şart
-4. **Hata yönetimi**: LLM timeout'ları ve bağlantı kopmaları için hazırlıklı olunmalı
-
----
-
-# Sonuç
-
-Bu proje, yerel LLM ve RAG yaklaşımını bir araya getirerek:
-
-✅ **Gizlilik**: Veriler kullanıcının bilgisayarında kalır  
-✅ **Maliyet**: Ücretsiz, açık kaynak araçlar  
-✅ **Esneklik**: Farklı modeller ve yapılandırmalar  
-✅ **Kullanılabilirlik**: Web arayüzü ile kolay erişim  
-
-sağlamaktadır.
+1. **Chunk size is critical**: Too small → context loss, too large → noise
+2. **Overlap is important**: Necessary to preserve sentence boundaries
+3. **Prompt engineering**: Special prompt design is essential for RAG
+4. **Error handling**: Must be prepared for LLM timeouts and connection drops
 
 ---
 
-**Hazırlayan**: [İsim]  
-**Tarih**: Şubat 2026
+# Conclusion
+
+This project combines local LLM and RAG approach to provide:
+
+✅ **Privacy**: Data stays on user's computer  
+✅ **Cost**: Free, open source tools  
+✅ **Flexibility**: Different models and configurations  
+✅ **Usability**: Easy access via web interface  
+
+---
+
+**Prepared by**: [Name]  
+**Date**: February 2026

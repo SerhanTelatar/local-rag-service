@@ -1,44 +1,44 @@
-# Yerel LLM ile Doküman Soru-Cevap Servisi
+# Local LLM Document Question-Answering Service
 
-Yerel çalışan bir LLM (Ollama) kullanarak dokümanlarınız üzerinden soru-cevap yapmanızı sağlayan RAG (Retrieval-Augmented Generation) tabanlı bir servistir.
+A RAG (Retrieval-Augmented Generation) based service that allows you to ask questions about your documents using a locally running LLM (Ollama).
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-## 🎯 Özellikler
+## 🎯 Features
 
-- 📄 **Çoklu Doküman Desteği**: PDF, TXT, Markdown ve DOCX dosyalarını işler
-- 🔍 **Semantik Arama**: Sentence-Transformers ile embedding tabanlı benzerlik araması
-- 🤖 **Yerel LLM**: Ollama ile tamamen yerel çalışır, verileriniz sizde kalır
-- ⚡ **Hızlı API**: FastAPI ile async, yüksek performanslı REST API
-- 🎨 **Modern Arayüz**: Kullanıcı dostu web arayüzü
+- 📄 **Multiple Document Support**: Process PDF, TXT, Markdown and DOCX files
+- 🔍 **Semantic Search**: Embedding-based similarity search with Sentence-Transformers
+- 🤖 **Local LLM**: Runs completely locally with Ollama, your data stays private
+- ⚡ **Fast API**: Async, high-performance REST API with FastAPI
+- 🎨 **Modern Interface**: User-friendly web interface
 
-## 📋 Gereksinimler
+## 📋 Requirements
 
 - Python 3.10+
-- [Ollama](https://ollama.ai/) kurulu ve çalışır durumda
-- 8GB+ RAM (embedding modeli için)
+- [Ollama](https://ollama.ai/) installed and running
+- 8GB+ RAM (for embedding model)
 
-## 🚀 Kurulum
+## 🚀 Installation
 
-### 1. Ollama Kurulumu
+### 1. Ollama Setup
 
-[Ollama](https://ollama.ai/) sitesinden işletim sisteminize uygun sürümü indirip kurun.
+Download and install [Ollama](https://ollama.ai/) for your operating system.
 
-Model indirme:
+Download a model:
 ```bash
 ollama pull llama3.1:8b
 ```
 
-### 2. Proje Kurulumu
+### 2. Project Setup
 
 ```bash
-# Repo'yu klonlayın
+# Clone the repository
 git clone https://github.com/yourusername/local-rag-service.git
 cd local-rag-service
 
-# Sanal ortam oluşturun
+# Create virtual environment
 python -m venv venv
 
 # Windows
@@ -47,115 +47,115 @@ venv\Scripts\activate
 # Linux/Mac
 source venv/bin/activate
 
-# Bağımlılıkları yükleyin
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Servisi Başlatma
+### 3. Start the Service
 
 ```bash
-# Ollama'nın çalıştığından emin olun
+# Make sure Ollama is running
 ollama serve
 
-# Yeni terminalde servisi başlatın
+# In a new terminal, start the service
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Servis `http://localhost:8000` adresinde çalışmaya başlayacaktır.
+The service will be available at `http://localhost:8000`.
 
-## 📖 Kullanım
+## 📖 Usage
 
-### Web Arayüzü
+### Web Interface
 
-Tarayıcınızda `http://localhost:8000` adresine gidin:
+Go to `http://localhost:8000` in your browser:
 
-1. Sol panelden doküman yükleyin (PDF, TXT, MD, DOCX)
-2. Soru alanına sorunuzu yazın
-3. "Sor" butonuna tıklayın veya Enter'a basın
-4. Cevabı ve kaynak dokümanları görüntüleyin
+1. Upload a document from the left panel (PDF, TXT, MD, DOCX)
+2. Type your question in the input field
+3. Click "Ask" or press Enter
+4. View the answer and source documents
 
-### API Kullanımı
+### API Usage
 
-#### Sağlık Kontrolü
+#### Health Check
 ```bash
 curl http://localhost:8000/api/health
 ```
 
-#### Doküman Yükleme
+#### Upload Document
 ```bash
 curl -X POST http://localhost:8000/api/upload \
   -F "file=@/path/to/document.pdf"
 ```
 
-#### Soru Sorma
+#### Ask Question
 ```bash
 curl -X POST http://localhost:8000/api/ask \
   -H "Content-Type: application/json" \
-  -d '{"question": "Doküman ne hakkında?"}'
+  -d '{"question": "What is the document about?"}'
 ```
 
-### API Dokümantasyonu
+### API Documentation
 
 Swagger UI: `http://localhost:8000/docs`
 ReDoc: `http://localhost:8000/redoc`
 
-## 🏗️ Proje Yapısı
+## 🏗️ Project Structure
 
 ```
 local-rag-service/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py              # FastAPI ana uygulama
-│   ├── config.py            # Yapılandırma
+│   ├── main.py              # FastAPI main application
+│   ├── config.py            # Configuration
 │   ├── api/
-│   │   └── routes.py        # API endpoint'leri
+│   │   └── routes.py        # API endpoints
 │   ├── models/
-│   │   └── schemas.py       # Pydantic modelleri
+│   │   └── schemas.py       # Pydantic models
 │   └── services/
-│       ├── llm_service.py   # Ollama entegrasyonu
-│       ├── document_service.py  # Doküman işleme
-│       └── vector_service.py    # ChromaDB işlemleri
-├── tests/                   # Unit testler
-├── static/                  # Frontend dosyaları
-├── documents/               # Yüklenen dokümanlar
-├── chroma_db/              # Vektör veritabanı
+│       ├── llm_service.py   # Ollama integration
+│       ├── document_service.py  # Document processing
+│       └── vector_service.py    # ChromaDB operations
+├── tests/                   # Unit tests
+├── static/                  # Frontend files
+├── documents/               # Uploaded documents
+├── chroma_db/              # Vector database
 ├── requirements.txt
 └── README.md
 ```
 
-## 🔧 Yapılandırma
+## 🔧 Configuration
 
-Ortam değişkenleri veya `.env` dosyası ile yapılandırabilirsiniz:
+You can configure via environment variables or a `.env` file:
 
-| Değişken | Varsayılan | Açıklama |
-|----------|------------|----------|
-| `OLLAMA_BASE_URL` | http://localhost:11434 | Ollama sunucu adresi |
-| `OLLAMA_MODEL` | llama3.1:8b | Kullanılacak LLM modeli |
-| `EMBEDDING_MODEL` | all-MiniLM-L6-v2 | Embedding modeli |
-| `CHUNK_SIZE` | 500 | Doküman parça boyutu |
-| `TOP_K_RESULTS` | 3 | Arama sonuç sayısı |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OLLAMA_BASE_URL` | http://localhost:11434 | Ollama server address |
+| `OLLAMA_MODEL` | llama3.1:8b | LLM model to use |
+| `EMBEDDING_MODEL` | all-MiniLM-L6-v2 | Embedding model |
+| `CHUNK_SIZE` | 500 | Document chunk size |
+| `TOP_K_RESULTS` | 3 | Number of search results |
 
-## 🧪 Testler
+## 🧪 Tests
 
 ```bash
-# Tüm testleri çalıştır
+# Run all tests
 pytest tests/ -v
 
-# Coverage raporu ile
+# With coverage report
 pytest tests/ -v --cov=app --cov-report=html
 ```
 
-## 🛠️ Kullanılan Teknolojiler
+## 🛠️ Technologies Used
 
-| Teknoloji | Neden? |
-|-----------|--------|
-| **FastAPI** | Async desteği, otomatik OpenAPI dokümantasyonu, tip güvenliği |
-| **Ollama** | Kolay kurulum, OpenAI uyumlu API, geniş model desteği |
-| **ChromaDB** | Hafif, Python-native, kalıcı depolama |
-| **Sentence-Transformers** | Ücretsiz, yerel çalışır, yüksek kaliteli embedding'ler |
-| **PyMuPDF** | Hızlı ve güvenilir PDF işleme |
+| Technology | Why? |
+|------------|------|
+| **FastAPI** | Async support, automatic OpenAPI documentation, type safety |
+| **Ollama** | Easy setup, OpenAI-compatible API, wide model support |
+| **ChromaDB** | Lightweight, Python-native, persistent storage |
+| **Sentence-Transformers** | Free, runs locally, high-quality embeddings |
+| **PyMuPDF** | Fast and reliable PDF processing |
 
-## 📊 Mimari
+## 📊 Architecture
 
 ```
 ┌─────────────┐     ┌─────────────────────────────────────────┐
@@ -171,14 +171,14 @@ pytest tests/ -v --cov=app --cov-report=html
                     └───────────┘ └────────────┘ └─────────┘
 ```
 
-## 📝 Lisans
+## 📝 License
 
-MIT License - Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+MIT License - See [LICENSE](LICENSE) file for details.
 
-## 🤝 Katkıda Bulunma
+## 🤝 Contributing
 
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit edin (`git commit -m 'Add amazing feature'`)
-4. Push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request

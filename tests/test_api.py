@@ -29,13 +29,13 @@ def mock_services():
         # Setup LLM service mock
         llm_instance = MagicMock()
         llm_instance.check_connection.return_value = True
-        llm_instance.generate_response.return_value = "Bu bir test cevabıdır."
+        llm_instance.generate_response.return_value = "This is a test answer."
         mock_llm.return_value = llm_instance
         
         # Setup Document service mock
         doc_instance = MagicMock()
         doc_instance.validate_file.return_value = (True, "")
-        doc_instance.extract_text.return_value = "Test metin içeriği"
+        doc_instance.extract_text.return_value = "Test text content"
         doc_instance.split_into_chunks.return_value = [
             MagicMock(content="Chunk 1", source="test.txt", chunk_index=0, metadata={})
         ]
@@ -91,7 +91,7 @@ class TestAskEndpoint:
     def test_ask_success(self, client, mock_services):
         """Test successful question answering."""
         response = client.post("/api/ask", json={
-            "question": "Test sorusu nedir?",
+            "question": "What is the test question?",
             "top_k": 3
         })
         
@@ -115,19 +115,19 @@ class TestAskEndpoint:
         mock_services['vec'].get_document_count.return_value = 0
         
         response = client.post("/api/ask", json={
-            "question": "Test sorusu?",
+            "question": "Test question?",
             "top_k": 3
         })
         
         assert response.status_code == 400
-        assert "doküman yüklenmemiş" in response.json()["detail"].lower()
+        assert "No documents" in response.json()["detail"]
     
     def test_ask_llm_unavailable(self, client, mock_services):
         """Test asking when LLM is unavailable."""
         mock_services['llm'].check_connection.return_value = False
         
         response = client.post("/api/ask", json={
-            "question": "Test sorusu?",
+            "question": "Test question?",
             "top_k": 3
         })
         
@@ -173,7 +173,7 @@ class TestUploadEndpoint:
     
     def test_upload_invalid_extension(self, client, mock_services):
         """Test uploading file with invalid extension."""
-        mock_services['doc'].validate_file.return_value = (False, "Desteklenmeyen dosya türü")
+        mock_services['doc'].validate_file.return_value = (False, "Unsupported file type")
         
         with tempfile.NamedTemporaryFile(mode='w', suffix='.exe', delete=False) as f:
             f.write("fake content")
@@ -187,7 +187,7 @@ class TestUploadEndpoint:
                 )
             
             assert response.status_code == 400
-            assert "Desteklenmeyen" in response.json()["detail"]
+            assert "Unsupported" in response.json()["detail"]
         finally:
             os.unlink(temp_path)
     
@@ -253,7 +253,7 @@ class TestDeleteEndpoint:
             response = client.delete("/api/documents/test.pdf")
         
         assert response.status_code == 200
-        assert "silindi" in response.json()["message"].lower()
+        assert "deleted" in response.json()["message"].lower()
     
     def test_delete_nonexistent_document(self, client, mock_services):
         """Test deleting a document that doesn't exist."""

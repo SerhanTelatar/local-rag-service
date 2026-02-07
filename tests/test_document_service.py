@@ -52,13 +52,13 @@ class TestDocumentService:
         """Test validation rejects unsupported file types."""
         is_valid, error = service.validate_file("script.py", 1000)
         assert is_valid is False
-        assert "Desteklenmeyen dosya türü" in error
+        assert "Unsupported file type" in error
     
     def test_validate_file_invalid_extension_exe(self, service):
         """Test validation rejects executable files."""
         is_valid, error = service.validate_file("program.exe", 1000)
         assert is_valid is False
-        assert "Desteklenmeyen dosya türü" in error
+        assert "Unsupported file type" in error
     
     def test_validate_file_too_large(self, service):
         """Test validation rejects files that exceed size limit."""
@@ -66,7 +66,7 @@ class TestDocumentService:
         large_size = 15 * 1024 * 1024
         is_valid, error = service.validate_file("large.pdf", large_size)
         assert is_valid is False
-        assert "Dosya boyutu çok büyük" in error
+        assert "File size too large" in error
     
     def test_validate_file_at_size_limit(self, service):
         """Test validation accepts files at exactly the size limit."""
@@ -82,25 +82,25 @@ class TestDocumentService:
     def test_extract_from_txt(self, service):
         """Test text extraction from TXT file."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
-            f.write("Bu bir test metnidir.\nİkinci satır.")
+            f.write("This is a test text.\nSecond line.")
             temp_path = Path(f.name)
         
         try:
             text = service.extract_text(temp_path)
-            assert "Bu bir test metnidir." in text
-            assert "İkinci satır" in text
+            assert "This is a test text." in text
+            assert "Second line" in text
         finally:
             os.unlink(temp_path)
     
     def test_extract_from_md(self, service):
         """Test text extraction from Markdown file."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False, encoding='utf-8') as f:
-            f.write("# Başlık\n\nBu bir **markdown** dosyasıdır.")
+            f.write("# Header\n\nThis is a **markdown** file.")
             temp_path = Path(f.name)
         
         try:
             text = service.extract_text(temp_path)
-            assert "# Başlık" in text
+            assert "# Header" in text
             assert "markdown" in text
         finally:
             os.unlink(temp_path)
@@ -114,7 +114,7 @@ class TestDocumentService:
         try:
             with pytest.raises(ValueError) as exc_info:
                 service.extract_text(temp_path)
-            assert "Desteklenmeyen dosya türü" in str(exc_info.value)
+            assert "Unsupported file type" in str(exc_info.value)
         finally:
             os.unlink(temp_path)
     
@@ -124,7 +124,7 @@ class TestDocumentService:
     
     def test_split_into_chunks_basic(self, service):
         """Test basic text splitting into chunks."""
-        text = "Paragraf bir.\n\nParagraf iki.\n\nParagraf üç."
+        text = "Paragraph one.\n\nParagraph two.\n\nParagraph three."
         chunks = service.split_into_chunks(text, "test.txt")
         
         assert len(chunks) >= 1
@@ -152,7 +152,7 @@ class TestDocumentService:
     
     def test_split_into_chunks_with_metadata(self, service):
         """Test that metadata is included in chunks."""
-        text = "Test içeriği."
+        text = "Test content."
         metadata = {"author": "Test User", "date": "2024-01-01"}
         chunks = service.split_into_chunks(text, "test.txt", metadata)
         
@@ -163,7 +163,7 @@ class TestDocumentService:
     def test_split_into_chunks_indexes(self, service):
         """Test that chunks have correct sequential indexes."""
         # Create text that will produce multiple chunks
-        text = "\n\n".join(["Paragraf " + str(i) + ". " + "X" * 400 for i in range(5)])
+        text = "\n\n".join(["Paragraph " + str(i) + ". " + "X" * 400 for i in range(5)])
         chunks = service.split_into_chunks(text, "test.txt")
         
         if len(chunks) > 1:
@@ -173,7 +173,7 @@ class TestDocumentService:
     def test_split_long_paragraph(self, service):
         """Test splitting of a single very long paragraph."""
         # Create a very long paragraph that exceeds chunk size
-        long_text = "Kelime " * 500
+        long_text = "Word " * 500
         chunks = service.split_into_chunks(long_text, "test.txt")
         
         assert len(chunks) > 1
@@ -197,6 +197,6 @@ class TestDocumentService:
     
     def test_split_single_word(self, service):
         """Test splitting text with single word."""
-        chunks = service.split_into_chunks("Merhaba", "test.txt")
+        chunks = service.split_into_chunks("Hello", "test.txt")
         assert len(chunks) == 1
-        assert chunks[0].content == "Merhaba"
+        assert chunks[0].content == "Hello"

@@ -72,10 +72,10 @@ function updateStatus(isConnected, docCount) {
 
     if (isConnected) {
         dot.classList.add('connected');
-        text.textContent = 'Bağlandı';
+        text.textContent = 'Connected';
     } else {
         dot.classList.add('disconnected');
-        text.textContent = 'Bağlantı Yok';
+        text.textContent = 'Disconnected';
     }
 
     elements.docCount.textContent = docCount;
@@ -102,7 +102,7 @@ async function loadDocuments() {
 
 function renderDocumentList() {
     if (documents.length === 0) {
-        elements.documentList.innerHTML = '<p class="empty-state">Henüz doküman yüklenmedi</p>';
+        elements.documentList.innerHTML = '<p class="empty-state">No documents uploaded yet</p>';
         return;
     }
 
@@ -113,7 +113,7 @@ function renderDocumentList() {
                 <div class="doc-name" title="${escapeHtml(doc.filename)}">${escapeHtml(doc.filename)}</div>
                 <div class="doc-meta">${formatFileSize(doc.size_bytes)}</div>
             </div>
-            <button class="doc-delete" onclick="deleteDocument('${escapeHtml(doc.filename)}')" title="Sil">🗑️</button>
+            <button class="doc-delete" onclick="deleteDocument('${escapeHtml(doc.filename)}')" title="Delete">🗑️</button>
         </div>
     `).join('');
 }
@@ -125,7 +125,7 @@ async function handleFileUpload(event) {
     const formData = new FormData();
     formData.append('file', file);
 
-    showToast('Yükleniyor...', 'warning');
+    showToast('Uploading...', 'warning');
 
     try {
         const response = await fetch(`${API_BASE}/upload`, {
@@ -136,15 +136,15 @@ async function handleFileUpload(event) {
         const data = await response.json();
 
         if (response.ok) {
-            showToast(`✓ ${data.filename} yüklendi (${data.chunks_created} parça)`, 'success');
+            showToast(`✓ ${data.filename} uploaded (${data.chunks_created} chunks)`, 'success');
             await loadDocuments();
             await checkHealth();
         } else {
-            showToast(`✗ ${data.detail || 'Yükleme başarısız'}`, 'error');
+            showToast(`✗ ${data.detail || 'Upload failed'}`, 'error');
         }
     } catch (error) {
         console.error('Upload failed:', error);
-        showToast('✗ Yükleme hatası', 'error');
+        showToast('✗ Upload error', 'error');
     }
 
     // Reset file input
@@ -152,7 +152,7 @@ async function handleFileUpload(event) {
 }
 
 async function deleteDocument(filename) {
-    if (!confirm(`"${filename}" dosyasını silmek istediğinize emin misiniz?`)) {
+    if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
         return;
     }
 
@@ -162,16 +162,16 @@ async function deleteDocument(filename) {
         });
 
         if (response.ok) {
-            showToast(`✓ ${filename} silindi`, 'success');
+            showToast(`✓ ${filename} deleted`, 'success');
             await loadDocuments();
             await checkHealth();
         } else {
             const data = await response.json();
-            showToast(`✗ ${data.detail || 'Silme başarısız'}`, 'error');
+            showToast(`✗ ${data.detail || 'Delete failed'}`, 'error');
         }
     } catch (error) {
         console.error('Delete failed:', error);
-        showToast('✗ Silme hatası', 'error');
+        showToast('✗ Delete error', 'error');
     }
 }
 
@@ -239,12 +239,12 @@ async function handleAskQuestion() {
         if (response.ok) {
             addMessage(data.answer, 'assistant', data.sources, data.processing_time);
         } else {
-            addMessage(`Hata: ${data.detail || 'Bir şeyler yanlış gitti'}`, 'assistant');
+            addMessage(`Error: ${data.detail || 'Something went wrong'}`, 'assistant');
         }
     } catch (error) {
         console.error('Ask failed:', error);
         removeMessage(loadingMsgId);
-        addMessage('Hata: Sunucuya bağlanılamadı', 'assistant');
+        addMessage('Error: Could not connect to server', 'assistant');
     }
 
     isLoading = false;
@@ -260,7 +260,7 @@ function addMessage(text, type, sources = [], time = null) {
     if (sources && sources.length > 0) {
         sourcesHtml = `
             <div class="message-sources">
-                <div class="sources-label">Kaynaklar:</div>
+                <div class="sources-label">Sources:</div>
                 ${sources.map(s => `<span class="source-item" title="${escapeHtml(s.content)}">${escapeHtml(s.source)} (${(s.score * 100).toFixed(0)}%)</span>`).join('')}
             </div>
         `;
@@ -268,7 +268,7 @@ function addMessage(text, type, sources = [], time = null) {
 
     let timeHtml = '';
     if (time !== null) {
-        timeHtml = `<div class="message-time">${time.toFixed(1)} saniye</div>`;
+        timeHtml = `<div class="message-time">${time.toFixed(1)} seconds</div>`;
     }
 
     const messageHtml = `

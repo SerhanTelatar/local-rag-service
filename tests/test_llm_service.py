@@ -50,7 +50,7 @@ class TestLLMService:
         mock_instance = MagicMock()
         mock_instance.list.return_value = {
             "models": [
-                {"name": "llama3.2:latest"},
+                {"name": "llama3.1:8b"},
                 {"name": "mistral:7b"}
             ]
         }
@@ -88,38 +88,38 @@ class TestLLMService:
         mock_instance = MagicMock()
         mock_instance.chat.return_value = {
             "message": {
-                "content": "Bu sorunun cevabı dokümanda bulunmaktadır."
+                "content": "The answer to this question is found in the document."
             }
         }
         mock_ollama_client.return_value = mock_instance
         
         service = LLMService()
         response = service.generate_response(
-            question="Test sorusu",
-            context="Test bağlamı"
+            question="Test question",
+            context="Test context"
         )
         
-        assert "dokümanda bulunmaktadır" in response
+        assert "found in the document" in response
     
     def test_generate_response_with_custom_prompt(self, mock_ollama_client):
         """Test response generation with custom system prompt."""
         mock_instance = MagicMock()
         mock_instance.chat.return_value = {
-            "message": {"content": "Özel cevap"}
+            "message": {"content": "Custom response"}
         }
         mock_ollama_client.return_value = mock_instance
         
         service = LLMService()
         response = service.generate_response(
             question="Test",
-            context="Bağlam",
-            system_prompt="Özel sistem mesajı"
+            context="Context",
+            system_prompt="Custom system message"
         )
         
         # Verify chat was called with custom prompt
         call_args = mock_instance.chat.call_args
         messages = call_args[1]['messages']
-        assert messages[0]['content'] == "Özel sistem mesajı"
+        assert messages[0]['content'] == "Custom system message"
     
     def test_generate_response_error(self, mock_ollama_client):
         """Test response generation when LLM fails."""
@@ -131,8 +131,8 @@ class TestLLMService:
         
         with pytest.raises(Exception) as exc_info:
             service.generate_response(
-                question="Test sorusu",
-                context="Test bağlamı"
+                question="Test question",
+                context="Test context"
             )
         assert "LLM error" in str(exc_info.value)
     
@@ -147,13 +147,13 @@ class TestLLMService:
         
         service = LLMService()
         message = service._format_user_message(
-            question="Soru nedir?",
-            context="Bağlam bilgisi"
+            question="What is this?",
+            context="Context information"
         )
         
-        assert "Soru nedir?" in message
-        assert "Bağlam bilgisi" in message
-        assert "Bağlam" in message or "Context" in message
+        assert "What is this?" in message
+        assert "Context information" in message
+        assert "Context" in message
     
     def test_default_system_prompt_exists(self, mock_ollama_client):
         """Test that default system prompt is not empty."""
@@ -164,4 +164,4 @@ class TestLLMService:
         prompt = service._get_default_system_prompt()
         
         assert len(prompt) > 50
-        assert "bağlam" in prompt.lower() or "context" in prompt.lower()
+        assert "context" in prompt.lower()

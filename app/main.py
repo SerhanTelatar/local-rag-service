@@ -51,18 +51,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     description="""
-    Yerel LLM ile Doküman Soru-Cevap Servisi.
+    Local LLM Document Question-Answering Service.
     
-    Bu servis, yüklenen dokümanlar üzerinden soru-cevap yapmanızı sağlar.
-    RAG (Retrieval-Augmented Generation) yaklaşımı kullanarak,
-    dokümanlarınızdaki bilgilere dayalı cevaplar üretir.
+    This service allows you to ask questions about your uploaded documents.
+    Using the RAG (Retrieval-Augmented Generation) approach,
+    it generates answers based on the information in your documents.
     
-    ## Özellikler
+    ## Features
     
-    - 📄 PDF, TXT, MD, DOCX dosya desteği
-    - 🔍 Semantik arama ile ilgili bölümleri bulma
-    - 🤖 Yerel LLM (Ollama) ile cevap üretme
-    - ⚡ Hızlı ve özel - verileriniz yerel kalır
+    - 📄 PDF, TXT, MD, DOCX file support
+    - 🔍 Semantic search to find relevant sections
+    - 🤖 Local LLM (Ollama) for answer generation
+    - ⚡ Fast and private - your data stays local
     """,
     version="1.0.0",
     lifespan=lifespan
