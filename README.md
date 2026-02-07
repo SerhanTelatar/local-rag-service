@@ -28,7 +28,7 @@ Yerel çalışan bir LLM (Ollama) kullanarak dokümanlarınız üzerinden soru-c
 
 Model indirme:
 ```bash
-ollama pull llama3.2
+ollama pull llama3.1:8b
 ```
 
 ### 2. Proje Kurulumu
@@ -130,7 +130,7 @@ Ortam değişkenleri veya `.env` dosyası ile yapılandırabilirsiniz:
 | Değişken | Varsayılan | Açıklama |
 |----------|------------|----------|
 | `OLLAMA_BASE_URL` | http://localhost:11434 | Ollama sunucu adresi |
-| `OLLAMA_MODEL` | llama3.2 | Kullanılacak LLM modeli |
+| `OLLAMA_MODEL` | llama3.1:8b | Kullanılacak LLM modeli |
 | `EMBEDDING_MODEL` | all-MiniLM-L6-v2 | Embedding modeli |
 | `CHUNK_SIZE` | 500 | Doküman parça boyutu |
 | `TOP_K_RESULTS` | 3 | Arama sonuç sayısı |
