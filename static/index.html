@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doküman Soru-Cevap Servisi</title>
+    <meta name="description" content="Yerel LLM ile dokümanlarınız hakkında sorular sorun">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">📚</span>
+                    <h1>Doküman QA</h1>
+                </div>
+                <div class="status-badge" id="statusBadge">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Bağlanıyor...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar - Documents -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>📄 Dokümanlar</h2>
+                    <span class="doc-count" id="docCount">0</span>
+                </div>
+                
+                <!-- Upload Section -->
+                <div class="upload-section">
+                    <label for="fileUpload" class="upload-label">
+                        <span class="upload-icon">⬆️</span>
+                        <span>Doküman Yükle</span>
+                        <span class="upload-hint">PDF, TXT, MD, DOCX</span>
+                    </label>
+                    <input type="file" id="fileUpload" accept=".pdf,.txt,.md,.docx" hidden>
+                </div>
+                
+                <!-- Document List -->
+                <div class="document-list" id="documentList">
+                    <p class="empty-state">Henüz doküman yüklenmedi</p>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <section class="chat-section">
+                <!-- Messages -->
+                <div class="messages-container" id="messagesContainer">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">🤖</div>
+                        <h2>Merhaba!</h2>
+                        <p>Dokümanlarınız hakkında sorular sormak için önce sol taraftan doküman yükleyin, sonra aşağıdaki alana sorunuzu yazın.</p>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div class="input-container">
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="Dokümanlarınız hakkında bir soru sorun..."
+                            rows="1"
+                        ></textarea>
+                        <button id="askButton" class="ask-button" disabled>
+                            <span class="button-text">Sor</span>
+                            <span class="button-loader" hidden></span>
+                        </button>
+                    </div>
+                    <p class="input-hint">Enter ile gönder • Shift+Enter ile yeni satır</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
